@@ -1,0 +1,77 @@
+type User @model {
+  id: ID!
+  email: String!
+  firstName: String
+  lastName: String
+  birthday: AWSDateTime!
+  orders: [Order] @connection(keyName: "byUser", fields: ["id"])
+}
+
+type Vehicle
+  @model
+  @auth(
+    rules: [
+      # allow admins to create, update and delete books
+      { allow: groups, groups: ["Admin"] }
+      # allow all authenticated users to view books
+      { allow: private, operations: [read] }
+      # allow all guest users (not authenticated) to view books
+      { allow: public, operations: [read] }
+    ]
+  ) {
+  id: ID!
+  manufacturer: String!
+  modal: String!
+  regNumber: String!
+  cost: Float!
+  rentable: Boolean!
+  image: String
+  description: String!
+  vehicleId: ID!
+  orders: [Order] @connection(keyName: "byVehicle", fields: ["id"])
+  vehicle: User @connection(fields: ["vehicleId"])
+}
+
+type Order
+  @model
+  # @auth(
+  #   rules: [
+  # only owner can see his orders
+  # { allow: owner, identityClaim: "email", ownerField: "customer" }
+  # allow admins to view orders
+  # { allow: groups, groups: ["Admin"] }
+  #   ]
+  # )
+  @key(name: "byUser", fields: ["userId"])
+  @key(name: "byVehicle", fields: ["vehicleId"]) {
+  id: ID!
+  userId: ID!
+  vehicleId: ID!
+  total: String!
+  orderId: ID!
+  user: User @connection(fields: ["orderId"])
+}
+
+enum OrderStatus {
+  SUCCESS
+  FAILED
+}
+
+input CartItem {
+  id: ID!
+  modal: String
+  image: String
+  cost: Float
+}
+
+input ProcessOrderInput {
+  id: ID!
+  cart: [CartItem]
+  total: Float!
+  address: String
+}
+
+type Mutation {
+  processOrder(input: ProcessOrderInput!): OrderStatus
+    @function(name: "processPayment-${env}")
+}

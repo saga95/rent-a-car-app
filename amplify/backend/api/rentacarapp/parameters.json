@@ -1,0 +1,8 @@
+{
+  "AppSyncApiName": "rentacarapp",
+  "DynamoDBBillingMode": "PAY_PER_REQUEST",
+  "DynamoDBEnableServerSideEncryption": "false",
+  "AuthCognitoUserPoolId": {
+    "Fn::GetAtt": ["authrentacarapp9585fecd", "Outputs.UserPoolId"]
+  }
+}
